@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_user_role">
+    <sys_user_role action="INSERT_OR_UPDATE">
+        <description>MyTC Timecard user</description>
+        <name>x_mytc.user</name>
+        <sys_class_name>sys_user_role</sys_class_name>
+        <sys_created_by>system</sys_created_by>
+        <sys_created_on>2026-02-15 16:00:00</sys_created_on>
+        <sys_id>ea00c6f2b2034a9ebac4559516c39fe0</sys_id>
+        <sys_updated_by>system</sys_updated_by>
+        <sys_updated_on>2026-02-15 16:00:00</sys_updated_on>
+    </sys_user_role>
+</record_update>

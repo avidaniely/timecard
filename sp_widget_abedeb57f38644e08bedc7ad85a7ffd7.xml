@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sp_widget">
+    <sp_widget action="INSERT_OR_UPDATE">
+        <active>true</active>
+        <category>MyTC</category>
+        <client_script><![CDATA[function($scope) {
+  var c = this;
+
+  c.tc = {sys_id: null, work_date: null, hours: null, short_description: ""};
+
+  c.reset = function() {
+    c.tc = {sys_id: null, work_date: null, hours: null, short_description: ""};
+  };
+
+  c.edit = function(r) {
+    c.tc = angular.copy(r);
+  };
+
+  c.save = function() {
+    c.server.update({action: "save", record: c.tc}).then(function(resp) {
+      c.data = resp.data;
+      c.reset();
+    });
+  };
+
+  c.remove = function() {
+    if (!c.tc.sys_id) return;
+    c.server.update({action: "delete", sys_id: c.tc.sys_id}).then(function(resp) {
+      c.data = resp.data;
+      c.reset();
+    });
+  };
+}]]></client_script>
+        <css></css>
+        <description>Portal widget to create and edit your timecards</description>
+        <id>mytc-timecard-entry</id>
+        <name>MyTC Timecard Entry</name>
+        <script><![CDATA[(function() {
+  var TABLE = "x_mytc_timecard";
+
+  function listMine() {
+    var out = [];
+    var gr = new GlideRecord(TABLE);
+    gr.addQuery("user", gs.getUserID());
+    gr.orderByDesc("work_date");
+    gr.setLimit(50);
+    gr.query();
+    while (gr.next()) {
+      out.push({
+        sys_id: gr.getUniqueValue(),
+        work_date: gr.getValue("work_date"),
+        hours: gr.getValue("hours"),
+        short_description: gr.getValue("short_description")
+      });
+    }
+    return out;
+  }
+
+  function canTouch(gr) {
+    return gr.isValidRecord() && gr.getValue("user") == gs.getUserID();
+  }
+
+  input = input || {};
+  var action = input.action || "get";
+
+  if (action == "save") {
+    var rec = input.record || {};
+    var gr = new GlideRecord(TABLE);
+
+    if (rec.sys_id) {
+      if (!gr.get(rec.sys_id) || !canTouch(gr)) {
+        // silently ignore
+      } else {
+        gr.setValue("work_date", rec.work_date);
+        gr.setValue("hours", rec.hours);
+        gr.setValue("short_description", rec.short_description || "");
+        gr.update();
+      }
+    } else {
+      gr.initialize();
+      gr.setValue("user", gs.getUserID());
+      gr.setValue("work_date", rec.work_date);
+      gr.setValue("hours", rec.hours);
+      gr.setValue("short_description", rec.short_description || "");
+      gr.insert();
+    }
+  } else if (action == "delete") {
+    var gr = new GlideRecord(TABLE);
+    if (gr.get(input.sys_id) && canTouch(gr)) {
+      gr.deleteRecord();
+    }
+  }
+
+  data.records = listMine();
+})();]]></script>
+        <sys_class_name>sp_widget</sys_class_name>
+        <sys_created_by>system</sys_created_by>
+        <sys_created_on>2026-02-15 16:00:00</sys_created_on>
+        <sys_id>abedeb57f38644e08bedc7ad85a7ffd7</sys_id>
+        <sys_name>MyTC Timecard Entry</sys_name>
+        <sys_package display_value="MyTC Timecards" source="x_mytc">7f87f0c1fada4676b20e6f14c071248f</sys_package>
+        <sys_scope display_value="MyTC Timecards">7f87f0c1fada4676b20e6f14c071248f</sys_scope>
+        <template><![CDATA[<div class="panel panel-default">
+  <div class="panel-heading">
+    <h4 class="panel-title">My Timecards</h4>
+  </div>
+  <div class="panel-body">
+    <form name="tcForm" novalidate ng-submit="c.save()">
+      <div class="form-group">
+        <label>Work date</label>
+        <input type="date" class="form-control" ng-model="c.tc.work_date" required>
+      </div>
+      <div class="form-group">
+        <label>Hours</label>
+        <input type="number" step="0.25" min="0" class="form-control" ng-model="c.tc.hours" required>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <input type="text" maxlength="160" class="form-control" ng-model="c.tc.short_description">
+      </div>
+      <div class="form-group">
+        <button class="btn btn-primary" type="submit" ng-disabled="tcForm.$invalid">Save</button>
+        <button class="btn btn-default" type="button" ng-click="c.reset()">New</button>
+        <button class="btn btn-danger" type="button" ng-click="c.remove()" ng-disabled="!c.tc.sys_id">Delete</button>
+      </div>
+    </form>
+
+    <hr/>
+
+    <div class="table-responsive">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Hours</th>
+            <th>Description</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="r in c.data.records">
+            <td>{{::r.work_date}}</td>
+            <td>{{::r.hours}}</td>
+            <td>{{::r.short_description}}</td>
+            <td><button class="btn btn-xs btn-default" ng-click="c.edit(r)">Edit</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>]]></template>
+        <title>My Timecards</title>
+    </sp_widget>
+</record_update>
